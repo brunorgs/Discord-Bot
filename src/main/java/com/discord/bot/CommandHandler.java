@@ -6,18 +6,22 @@ import discord4j.core.spec.MessageCreateMono;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 @Component
 public class CommandHandler {
 
-    private final CommandRunner commandRunner;
+    private final List<CommandRunner> commandRunnerList;
 
-    public CommandHandler(CommandRunner commandRunner) {
-        this.commandRunner = commandRunner;
+    public CommandHandler(List<CommandRunner> commandRunnerList) {
+        this.commandRunnerList = commandRunnerList;
     }
 
     public Mono<Message> handleCommand(String command, Mono<MessageChannel> messageChannel) {
 
-        if(commandRunner.valid(command)) return commandRunner.execute(messageChannel);
+        for (CommandRunner impl : commandRunnerList) {
+            if(impl.valid(command)) return impl.execute(messageChannel);
+        }
 
         return MessageCreateMono.empty();
     }
